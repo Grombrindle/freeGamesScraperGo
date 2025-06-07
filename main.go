@@ -3,8 +3,7 @@ package main
 import (
 	// "fmt"
 	vpn "freeGames/vpnOpen"
-	"log"
-	"strconv"
+	// "log"
 	"time"
 	// "github.com/chromedp/chromedp"
 	// "github.com/PuerkitoBio/goquery"
@@ -12,19 +11,17 @@ import (
 )
 
 var (
-	pidNumber string
+	pidNumber   int
+	appFinished bool = true
 )
 
 func main() {
 	vpn.OpenVpn()
 	time.Sleep(10 * time.Second)
-	pidNumber = vpn.PID()
 
-	pid, err := strconv.Atoi(pidNumber)
-	if err != nil {
-		log.Fatal(err)
+	if appFinished {
+		time.Sleep(20 * time.Second)
+		pidNumber = vpn.PID()
+		vpn.KillProcess(pidNumber)
 	}
-	time.Sleep(20 * time.Second)
-
-	vpn.KillProcess(pid)
 }

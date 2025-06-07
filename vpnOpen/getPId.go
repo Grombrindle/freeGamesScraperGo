@@ -5,16 +5,17 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
-func PID() string {
+func PID() int {
 	cmd := exec.Command("tasklist", "/FI", "IMAGENAME eq ProtonVPN.Client.exe")
 	output, err := cmd.Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	var pid string
+	var pid int
 	// pid = ""
 
 	lines := bytes.Split(output, []byte{'\n'})
@@ -25,7 +26,11 @@ func PID() string {
 			if len(fields) >= 2 {
 				pid := fields[1]
 				fmt.Println("PID:", fields[1])
-				return pid
+				pidNumber, err := strconv.Atoi(pid)
+				if err != nil {
+					log.Fatal(err)
+				}
+				return pidNumber
 			}
 		}
 	}
