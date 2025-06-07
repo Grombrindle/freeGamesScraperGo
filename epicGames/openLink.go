@@ -9,21 +9,26 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/chromedp/chromedp"
+	"github.com/gen2brain/beeep"
 	//    h "github.com/go-rod/rod"
 	// "github.com/go-rod/rod/lib/input"
 	// "github.com/teocci/go-chrome-cookies/chrome"
 	// un "github.com/Davincible/chromedp-undetected"
 	// cu "github.com/lrakai/chromedp-undetected"
 	// "github.com/chromedp/cdproto/cdp"
-	"github.com/chromedp/chromedp"
 )
 
-// Add random delays between actions
 func randomDelay() chromedp.ActionFunc {
 	return func(ctx context.Context) error {
-		delay := time.Duration(rand.Intn(5000)+8000) * time.Millisecond // 1-4 seconds
+		delay := time.Duration(rand.Intn(4000)+7000) * time.Millisecond
 		return chromedp.Sleep(delay).Do(ctx)
 	}
+}
+
+func randomScreenshotName() string {
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	return fmt.Sprintf("C:/Users/Damasco/Pictures/tests/screenshot_%d_%d.png", time.Now().Unix(), r.Intn(100000))
 }
 
 // func humanMoveWithRod(page *rod.Page, selector string) error {
@@ -35,17 +40,21 @@ func randomDelay() chromedp.ActionFunc {
 //     return nil
 // }
 
-// func humanScroll(ctx context.Context, totalScroll, step int) error {
-// 	for current := 0; current < totalScroll; current += step {
-// 		scrollJS := `window.scrollTo(0, ` + fmt.Sprint(current) + `)`
-// 		if err := chromedp.Evaluate(scrollJS, nil).Do(ctx); err != nil {
-// 			return err
-// 		}
-// 		// Random delay between 100-300ms to simulate human pause
-// 		time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
-// 	}
-// 	return nil
-// }
+//	func humanScroll(ctx context.Context, totalScroll, step int) error {
+//		for current := 0; current < totalScroll; current += step {
+//			scrollJS := `window.scrollTo(0, ` + fmt.Sprint(current) + `)`
+//			if err := chromedp.Evaluate(scrollJS, nil).Do(ctx); err != nil {
+//				return err
+//			}
+//			// Random delay between 100-300ms to simulate human pause
+//			time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
+//		}
+//		return nil
+//	}
+var (
+	links []string
+	res   []byte
+)
 
 func main() {
 
@@ -63,6 +72,7 @@ func main() {
 		chromedp.UserDataDir(chromeProfilePath),
 		chromedp.WindowSize(1280, 800),
 		chromedp.Flag("headless", false),
+		chromedp.Flag("start-minimized", true),
 		chromedp.Flag("disable-blink-features", "AutomationControlled"),
 		chromedp.Flag("profile-directory", "Default"),
 		chromedp.Flag("no-first-run", true),
@@ -75,7 +85,7 @@ func main() {
 		// chromedp.Flag("disable-extensions-except", `C:\Users\Damasco\AppData\Local\Google\Chrome\User Data\Default\Extensions\infdcenbdoibcacogknkjleclhnjdmfh\1.0.2_0`),
 		chromedp.UserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"),
 	)
-	var links []string
+
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
 
@@ -131,7 +141,7 @@ func main() {
 			// Element is visible
 			log.Println("  what ? ")
 		}
-		timeoutCtx, cancel := context.WithTimeout(ctx, 7*time.Second) // 5-second timeout
+		timeoutCtx, cancel := context.WithTimeout(ctx, 5*time.Second) // 5-second timeout
 		defer cancel()
 		err = chromedp.Run(timeoutCtx,
 			chromedp.WaitVisible(`//button[.//span[text()="In Library"]]`, chromedp.BySearch),
@@ -171,7 +181,8 @@ func main() {
 
 			// chromedp.WaitVisible(`#app-main-content > div.css-1dnikhe > div > div > div > div.css-f0x796 > div > div > div > div > div:nth-child(2) > div > div.css-15s2kp8`, chromedp.ByQuery),
 			// chromedp.Sleep(18*time.Second),
-			chromedp.Click(`/html/body/div[1]/div/div/div[4]/main/div[2]/div/div/div/div[2]/div[4]/div/aside/div/div/div[5]/div[1]/button`, chromedp.NodeVisible, chromedp.BySearch),
+			// chromedp.Click(`/html/body/div[1]/div/div/div[4]/main/div[2]/div/div/div/div[2]/div[4]/div/aside/div/div/div[5]/div[1]/button`, chromedp.NodeVisible, chromedp.BySearch),
+			chromedp.Click(`//button[.//span[text()="Get"]]`, chromedp.NodeVisible, chromedp.BySearch),
 			randomDelay(),
 
 			chromedp.Click(`/html/body/div[1]/div/div[4]/div/div/div/div[2]/div[2]/div/button`, chromedp.NodeVisible, chromedp.BySearch),
@@ -186,12 +197,28 @@ func main() {
 			// chromedp.Sleep(6*time.Second),
 			// chromedp.WaitVisible(`#my-element`, chromedp.ByID),
 		)
-
 		if err != nil {
-			log.Println("Get button not found or click failed, stopping loop.")
-			continue
+			log.Fatal(err)
 		}
+		err = beeep.Notify("My Go Program", "BRO COME SOLVE THE FUCKING CAPTCHA", "")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		time.Sleep(5000 * time.Millisecond)
+		err = chromedp.Run(ctx,
+			chromedp.CaptureScreenshot(&res),
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		filename := randomScreenshotName()
+		err = os.WriteFile(filename, res, 0644)
+		fmt.Printf("screen shot was taken and its now in : %s", filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	}
 
 	// var cookies []*network.Cookie
@@ -210,6 +237,7 @@ func main() {
 	// for i, cookie := range cookies {
 	// 	log.Printf("%d: %+v\n", i+1, cookie)
 	// }
+
 	time.Sleep(50000 * time.Millisecond)
 	log.Println("Success! You should see your logged-in session.")
 }
