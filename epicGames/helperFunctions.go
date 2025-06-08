@@ -18,7 +18,7 @@ func RandomDelay() chromedp.ActionFunc {
 
 func RandomScreenshotName() string {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return fmt.Sprintf("C:/Users/Damasco/Pictures/tests/screenshot_%d_%d.png", time.Now().Unix(), r.Intn(100000))
+	return fmt.Sprintf("screenshots/screenshot_%d_%d.png", time.Now().Unix(), r.Intn(100000))
 }
 
 // func humanMoveWithRod(page *rod.Page, selector string) error {

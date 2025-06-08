@@ -39,7 +39,7 @@ func OpenLink() {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.UserDataDir(chromeProfilePath),
 		chromedp.WindowSize(1280, 800),
-		chromedp.Flag("headless", true),
+		chromedp.Flag("headless", false),
 		chromedp.Flag("start-minimized", true),
 		chromedp.Flag("disable-blink-features", "AutomationControlled"),
 		chromedp.Flag("profile-directory", "Default"),
