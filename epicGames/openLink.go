@@ -1,14 +1,14 @@
-package main
+package epicgames
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"time"
 
+	// "FreeGames/epicGames"
 	"github.com/chromedp/chromedp"
 	"github.com/gen2brain/beeep"
 	//    h "github.com/go-rod/rod"
@@ -19,44 +19,12 @@ import (
 	// "github.com/chromedp/cdproto/cdp"
 )
 
-func randomDelay() chromedp.ActionFunc {
-	return func(ctx context.Context) error {
-		delay := time.Duration(rand.Intn(4000)+7000) * time.Millisecond
-		return chromedp.Sleep(delay).Do(ctx)
-	}
-}
-
-func randomScreenshotName() string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return fmt.Sprintf("C:/Users/Damasco/Pictures/tests/screenshot_%d_%d.png", time.Now().Unix(), r.Intn(100000))
-}
-
-// func humanMoveWithRod(page *rod.Page, selector string) error {
-//     el := page.MustElement(selector)
-//     el.MustMoveMouseOut()
-//     page.MustWaitRequestIdle()
-//     time.Sleep(time.Duration(rand.Intn(3000)+1000) * time.Millisecond)
-//     el.MustClick()
-//     return nil
-// }
-
-//	func humanScroll(ctx context.Context, totalScroll, step int) error {
-//		for current := 0; current < totalScroll; current += step {
-//			scrollJS := `window.scrollTo(0, ` + fmt.Sprint(current) + `)`
-//			if err := chromedp.Evaluate(scrollJS, nil).Do(ctx); err != nil {
-//				return err
-//			}
-//			// Random delay between 100-300ms to simulate human pause
-//			time.Sleep(time.Duration(rand.Intn(200)+100) * time.Millisecond)
-//		}
-//		return nil
-//	}
 var (
 	links []string
 	res   []byte
 )
 
-func main() {
+func OpenLink() {
 
 	chromeProfilePath := filepath.Join(
 		os.Getenv("LOCALAPPDATA"),
@@ -71,7 +39,7 @@ func main() {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.UserDataDir(chromeProfilePath),
 		chromedp.WindowSize(1280, 800),
-		chromedp.Flag("headless", false),
+		chromedp.Flag("headless", true),
 		chromedp.Flag("start-minimized", true),
 		chromedp.Flag("disable-blink-features", "AutomationControlled"),
 		chromedp.Flag("profile-directory", "Default"),
@@ -91,11 +59,6 @@ func main() {
 
 	ctx, cancel := chromedp.NewContext(allocCtx)
 	defer cancel()
-
-	// _ = chromedp.Run(ctx,
-	// 	chromedp.Navigate("https://example.com"),
-	// 	chromedp.Sleep(3*time.Second),
-	// )
 
 	err := chromedp.Run(ctx,
 		chromedp.Navigate("https://store.epicgames.com/en-US/"),
@@ -157,7 +120,7 @@ func main() {
 		}
 
 		err = chromedp.Run(ctx,
-			randomDelay(),
+			RandomDelay(),
 
 			// cu.LoadCookiesFromFile("C:/Users/Damasco/Documents/test/store.epicgames.com.cookies.json"),
 			// chromedp.Navigate("https://store.epicgames.com/en-US/"),
@@ -172,10 +135,10 @@ func main() {
 			// Click on the first free game (DEATHLOOP)
 
 			// chromedp.Click(`#app-main-content > div.css-1dnikhe > div > div > div > div:nth-child(5) > div:nth-child(2) > span:nth-child(1) > div > div > section > div > div:nth-child(1) > div > div > a`, chromedp.NodeVisible),
-			// randomDelay(),
+			// RandomDelay(),
 
 			// chromedp.Click(`/html/body/div[1]/div/div/div[4]/main/div[2]/div/div/div/div[3]/div[2]/span[1]/div/div/section/div/div[2]/div/div/a/div/div[1]/div[1]/div/div/div/div/div`, chromedp.NodeVisible),
-			// randomDelay(),
+			// RandomDelay(),
 			// Wait for the game page to load
 			// chromedp.WaitVisible(`h1`), // Wait for any h1 element to appear on the new page
 
@@ -183,13 +146,13 @@ func main() {
 			// chromedp.Sleep(18*time.Second),
 			// chromedp.Click(`/html/body/div[1]/div/div/div[4]/main/div[2]/div/div/div/div[2]/div[4]/div/aside/div/div/div[5]/div[1]/button`, chromedp.NodeVisible, chromedp.BySearch),
 			chromedp.Click(`//button[.//span[text()="Get"]]`, chromedp.NodeVisible, chromedp.BySearch),
-			randomDelay(),
+			RandomDelay(),
 
 			chromedp.Click(`/html/body/div[1]/div/div[4]/div/div/div/div[2]/div[2]/div/button`, chromedp.NodeVisible, chromedp.BySearch),
-			randomDelay(),
+			RandomDelay(),
 
 			chromedp.Click(`/html/body/div[1]/div[3]/div[2]/div/div[3]/button[2]`, chromedp.NodeVisible, chromedp.BySearch),
-			randomDelay(),
+			RandomDelay(),
 			//IF WE WERE NOT LOGGED IN AND WANT TO DO AGE THINGYS BUT I SHOULDNOT NEED IT HERE (IT DOESNOT WORK BTW)
 			/* chromedp.Click(`#month_toggle`, chromedp.ByID),
 			chromedp.Sleep(1*time.Second),
@@ -212,7 +175,13 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		filename := randomScreenshotName()
+		err = chromedp.Run(ctx,
+			chromedp.Evaluate(`window.scrollBy(0, 270)`, nil),
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		filename := RandomScreenshotName()
 		err = os.WriteFile(filename, res, 0644)
 		fmt.Printf("screen shot was taken and its now in : %s", filename)
 		if err != nil {
@@ -239,5 +208,5 @@ func main() {
 	// }
 
 	time.Sleep(50000 * time.Millisecond)
-	log.Println("Success! You should see your logged-in session.")
+	log.Println("Success!.")
 }

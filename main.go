@@ -2,7 +2,9 @@ package main
 
 import (
 	// "fmt"
+	epic "freeGames/epicGames"
 	vpn "freeGames/vpnOpen"
+
 	// "log"
 	"time"
 	// "github.com/chromedp/chromedp"
@@ -17,7 +19,9 @@ var (
 
 func main() {
 	vpn.OpenVpn()
-	time.Sleep(10 * time.Second)
+	time.Sleep(12 * time.Second)
+
+	epic.OpenLink()
 
 	if appFinished {
 		time.Sleep(20 * time.Second)
